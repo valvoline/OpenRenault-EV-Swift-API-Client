@@ -29,4 +29,17 @@ public enum ChargingStatus: Double, Codable {
         case .energyFlow: return "Energy flow (V2L)"
         }
     }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let decoded = try container.decode(Double.self)
+        // Some backends return integer-like values (1, 2, ...) instead of tenths (0.1, 0.2, ...).
+        let normalized = decoded > 0.9 ? decoded / 10.0 : decoded
+        if let status = ChargingStatus(rawValue: normalized) {
+            self = status
+            return
+        }
+        throw DecodingError.dataCorruptedError(in: container,
+                                               debugDescription: "Cannot initialize ChargingStatus from invalid value \(decoded)")
+    }
 }

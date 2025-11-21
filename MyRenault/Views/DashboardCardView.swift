@@ -42,7 +42,7 @@ struct DashboardCardView: View {
                         if apiViewModel.batteryStatus?.data?.attributes?.chargingStatus == .inCharge {
                             Text("To full charge")
                                 .font(.footnote).fontWeight(.regular)
-                            Text("\(apiViewModel.batteryStatus?.data?.attributes?.chargingRemainingTime ?? 0)" + " min")
+                            Text(chargingRemainingDescription(for: apiViewModel.batteryStatus?.data?.attributes?.chargingRemainingTime))
                                 .font(.default).fontWeight(.bold)
                         } else {
                             Text("Battery level")
@@ -78,5 +78,13 @@ struct DashboardCardView: View {
                 }
             }
         }
+    }
+    
+    private func chargingRemainingDescription(for minutes: Int?) -> String {
+        guard let minutes else { return "0 min" }
+        guard minutes > 60 else { return "\(minutes) min" }
+        let hours = minutes / 60
+        let remainingMinutes = minutes % 60
+        return "\(hours)h:\(String(format: "%02dm", remainingMinutes))"
     }
 }
