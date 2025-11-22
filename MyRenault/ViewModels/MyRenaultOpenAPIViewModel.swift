@@ -202,7 +202,7 @@ final class MyRenaultOpenAPIViewModel {
     
     /// Convenience method that requests all data blocks for the selected vehicle.
     /// Used during dashboard refreshes and previews.
-    func refreshAllVehicleData(startDate: Date? = nil, endDate: Date? = nil) async {
+    func refreshAllVehicleData(startDate: Date? = nil, endDate: Date? = nil, forceRefresh: Bool = false) async {
         guard let accountId = selectedAccountId?.accountId,
               let vin = selectedVehicle?.vin else {
             errorMessage = "Missing account or vehicle info"
@@ -230,22 +230,22 @@ final class MyRenaultOpenAPIViewModel {
         isLoading = true
         defer { isLoading = false }
         do {
-            if self.cockpit == nil {
+            if self.cockpit == nil || forceRefresh {
                 self.cockpit = try await api.getCockpit(accountId: accountId, vin: vin)
             }
-            if self.batteryStatus == nil {
+            if self.batteryStatus == nil || forceRefresh {
                 self.batteryStatus = try await api.getBatteryStatus(accountId: accountId, vin: vin)
             }
-            if self.location == nil {
+            if self.location == nil || forceRefresh {
                 self.location = try await api.getLocation(accountId: accountId, vin: vin)
             }
-            if self.socLevel == nil {
+            if self.socLevel == nil || forceRefresh {
                 self.socLevel = try await api.getSocLevels(accountId: accountId, vin: vin)
             }
-            if self.hvacStatus == nil {
+            if self.hvacStatus == nil || forceRefresh {
                 self.hvacStatus = try await api.getHvacStatus(accountId: accountId, vin: vin)
             }
-            if self.chargeHistory == nil {
+            if self.chargeHistory == nil || forceRefresh {
                 self.chargeHistory = try await api.getChargingHistory(accountId: accountId, vin: vin, startDate: startDateString, endDate: endDateString)
             }
             // Persist snapshots for subsequent Preview reloads

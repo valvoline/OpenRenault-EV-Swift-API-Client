@@ -19,7 +19,6 @@ struct ContentView: View {
     @State private var pendingCustomEndDate: Date = Date()
     @State private var showingCustomRangeSheet = false
     @State private var showVehicleSwitcher = false
-    @State private var dashboardRefreshID = UUID()
 
     var body: some View {
         Group {
@@ -124,7 +123,7 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showVehicleSwitcher) {
             VehicleSwitcherView {
-                Task { await refreshAllData() }
+                Task { await refreshAllData(forceRefresh: true) }
             }
             .environment(apiViewModel)
         }
@@ -189,14 +188,13 @@ struct ContentView: View {
                 }
                 .listStyle(.plain)
                 .refreshable {
-                    await refreshAllData()
+                    await refreshAllData(forceRefresh: true)
                 }
                 .scrollContentBackground(.hidden)
                 .contentMargins(.top, 180, for: .scrollContent)
                 .contentMargins(.top, 180, for: .scrollIndicators)
                 .overlay(alignment: .top) {
                     DashboardCardView(frameHeight: 290)
-                        .id(dashboardRefreshID)
                         .ignoresSafeArea()
                 }
                 
@@ -315,16 +313,13 @@ struct ContentView: View {
         )
     }
 
-    private func refreshAllData() async {
+    private func refreshAllData(forceRefresh: Bool = false) async {
         guard hasConfiguredVehicle else { return }
         let start = startDate(for: selectedRange)
         let end = endDate(for: selectedRange)
         async let history: Void = apiViewModel.refreshChargeHistoryForVehicle(startDate: start, endDate: end)
-        async let fullRefresh: Void = apiViewModel.refreshAllVehicleData(startDate: start, endDate: end)
+        async let fullRefresh: Void = apiViewModel.refreshAllVehicleData(startDate: start, endDate: end, forceRefresh: forceRefresh)
         _ = await (history, fullRefresh)
-        await MainActor.run {
-            dashboardRefreshID = UUID()
-        }
     }
     
     private var refreshTaskIdentifier: String {

@@ -23,8 +23,8 @@ struct ChargeHistoryChartView: View {
             return ChargeEnergyPoint(date: date,
                                      energy: charge.chargeEnergyRecovered,
                                      dayLabel: dayFormatter.string(from: date))
-        }
-        
+        }.sorted(by: { $0.date < $1.date })
+
         if points.isEmpty {
             Text("No charge data to plot")
                 .font(.footnote)
@@ -35,6 +35,7 @@ struct ChargeHistoryChartView: View {
                 Text("Energy (kW)")
                     .font(.caption)
                     .foregroundColor(.secondary)
+                    .padding(.bottom)
                 Chart(points) { point in
                     BarMark(
                         x: .value("Day", point.dayLabel),
